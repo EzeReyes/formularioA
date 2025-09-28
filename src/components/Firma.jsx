@@ -1,9 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 
 function Firma() {
   const [capitanFirmas, setCapitanFirmas] = useState([]);
   const [inspectorFirmas, setInspectorFirmas] = useState([]);
+
+  // 🔁 Recuperar firmas guardadas al cargar
+  useEffect(() => {
+    const recuperarFirmas = (tipo) => {
+      const firmas = [];
+      for (let key in localStorage) {
+        if (key.startsWith(`firma_${tipo}_imagen_`)) {
+          const id = key.replace(`firma_${tipo}_imagen_`, '');
+          const imagen = localStorage.getItem(key);
+          const nombre = localStorage.getItem(`firma_${tipo}_nombre_${id}`) || '';
+          firmas.push({
+            id: Number(id),
+            ref: React.createRef(),
+            nombre,
+            guardada: true,
+            imagen
+          });
+        }
+      }
+      return firmas;
+    };
+
+    setCapitanFirmas(recuperarFirmas('capitan'));
+    setInspectorFirmas(recuperarFirmas('inspector'));
+  }, []);
 
   const agregarFirma = (tipo) => {
     const nuevaFirma = {
@@ -14,25 +39,29 @@ function Firma() {
       imagen: ''
     };
     tipo === 'capitan'
-      ? setCapitanFirmas([...capitanFirmas, nuevaFirma])
-      : setInspectorFirmas([...inspectorFirmas, nuevaFirma]);
+      ? setCapitanFirmas((prev) => [...prev, nuevaFirma])
+      : setInspectorFirmas((prev) => [...prev, nuevaFirma]);
   };
 
-  const guardarFirma = (firma, tipo) => {
+    const guardarFirma = (firma, tipo) => {
     if (firma.ref.current) {
-      const dataURL = firma.ref.current.getCanvas().toDataURL('image/png');
-      const actualizado = { ...firma, guardada: true, imagen: dataURL };
-      tipo === 'capitan'
+        const dataURL = firma.ref.current.getCanvas().toDataURL('image/png');
+        localStorage.setItem(`firma_${tipo}_imagen_${firma.id}_${firma.nombre}`, dataURL);
+        localStorage.setItem(`firma_${tipo}_nombre_${firma.id}`, firma.nombre);
+        const actualizado = { ...firma, guardada: true, imagen: dataURL };
+        tipo === 'capitan'
         ? setCapitanFirmas((prev) =>
             prev.map((f) => (f.id === firma.id ? actualizado : f))
-          )
+            )
         : setInspectorFirmas((prev) =>
             prev.map((f) => (f.id === firma.id ? actualizado : f))
-          );
+            );
     }
-  };
+    };
 
   const eliminarFirma = (id, tipo) => {
+    localStorage.removeItem(`firma_${tipo}_imagen_${id}`);
+    localStorage.removeItem(`firma_${tipo}_nombre_${id}`);
     tipo === 'capitan'
       ? setCapitanFirmas((prev) => prev.filter((f) => f.id !== id))
       : setInspectorFirmas((prev) => prev.filter((f) => f.id !== id));
@@ -114,16 +143,7 @@ function Firma() {
           />
         )}
 
-        {!firma.guardada && (
-          <button
-            onClick={() => guardarFirma(firma, tipo)}
-            className='bg-green-500 text-white px-2 py-1 mt-2 rounded hover:bg-green-600'
-          >
-            Guardar firma
-          </button>
-        )}
-
-        <div className='mt-2'>
+                <div className='mt-2'>
           <span className='font-bold'>Nombre y Apellido:</span>
           <input
             type='text'
@@ -145,31 +165,42 @@ function Firma() {
             }}
           />
         </div>
+
+        {!firma.guardada && (
+          <button
+            onClick={() => guardarFirma(firma, tipo)}
+            className='bg-green-500 text-white px-2 py-1 mt-2 rounded hover:bg-green-600'
+          >
+            Guardar firma
+          </button>
+        )}
+
+
       </div>
     ));
 
   return (
     <div className='p-4'>
-      <div className='flex justify-between gap-8 flex-wrap'>
+      <div className='flex justify-between'>
         <div>
-          <h2 className='text-xl font-bold mb-2'>Firmas del Capitán</h2>
           {renderFirmas(capitanFirmas, 'capitan')}
           <button
             onClick={() => agregarFirma('capitan')}
             className='bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700'
           >
-            Agregar firma del Capitán
+            Agregar firma del Capitán/Armador
           </button>
+            <p className='text-xs font-bold border-t mt-2'>Firma del Capitán/Armador:</p>
         </div>
 
         <div className={`grid gap-4 ${inspectorFirmas.length > 2 ? 'grid-cols-2' : ''}`}>
-          <h2 className='text-xl font-bold mb-2 col-span-2'>Firmas del Inspector</h2>
+          <h2 className='text-xl font-bold mb-2 col-span-2'>Firma/s de Inspector/es:</h2>
           {renderFirmas(inspectorFirmas, 'inspector')}
           <button
             onClick={() => agregarFirma('inspector')}
             className='bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 mt-2 col-span-2'
           >
-            Agregar firma del Inspector
+            Agregar firma de Inspector
           </button>
         </div>
       </div>
