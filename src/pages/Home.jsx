@@ -6,19 +6,11 @@ import Title from "../components/Title";
 import Controles from "../components/Controles";
 import Certificados from "../components/Certificados";
 
-const Home = () => {
-
-    const handleDownload = async () => {
-        const btn = await document.getElementById("btn-dwload");
-        btn.style.display = "none";
-        
-        window.print();
-    };
-    
+const Home = () => {  
 
     return (
         <>
-        <div className="text-xs" id="form">
+        <div className="text-xs">
         <Navbar />
         <Title title="FORMULARIO A-1 R.G. PNA 3-036" />
         <div>
@@ -37,7 +29,6 @@ const Home = () => {
         <hr></hr>
         <Certificados />
         </div>
-        <button id="btn-dwload" onClick={handleDownload}>Descargar PDF</button>
         </>
     )
 }

@@ -5,7 +5,6 @@ function Firma() {
   const [capitanFirmas, setCapitanFirmas] = useState([]);
   const [inspectorFirmas, setInspectorFirmas] = useState([]);
 
-  // 🔁 Recuperar firmas guardadas al cargar
   useEffect(() => {
     const recuperarFirmas = (tipo) => {
       const firmas = [];
@@ -43,21 +42,21 @@ function Firma() {
       : setInspectorFirmas((prev) => [...prev, nuevaFirma]);
   };
 
-    const guardarFirma = (firma, tipo) => {
+  const guardarFirma = (firma, tipo) => {
     if (firma.ref.current) {
-        const dataURL = firma.ref.current.getCanvas().toDataURL('image/png');
-        localStorage.setItem(`firma_${tipo}_imagen_${firma.id}_${firma.nombre}`, dataURL);
-        localStorage.setItem(`firma_${tipo}_nombre_${firma.id}`, firma.nombre);
-        const actualizado = { ...firma, guardada: true, imagen: dataURL };
-        tipo === 'capitan'
+      const dataURL = firma.ref.current.getCanvas().toDataURL('image/png');
+      localStorage.setItem(`firma_${tipo}_imagen_${firma.id}`, dataURL);
+      localStorage.setItem(`firma_${tipo}_nombre_${firma.id}`, firma.nombre);
+      const actualizado = { ...firma, guardada: true, imagen: dataURL };
+      tipo === 'capitan'
         ? setCapitanFirmas((prev) =>
             prev.map((f) => (f.id === firma.id ? actualizado : f))
-            )
+          )
         : setInspectorFirmas((prev) =>
             prev.map((f) => (f.id === firma.id ? actualizado : f))
-            );
+          );
     }
-    };
+  };
 
   const eliminarFirma = (id, tipo) => {
     localStorage.removeItem(`firma_${tipo}_imagen_${id}`);
@@ -67,10 +66,11 @@ function Firma() {
       : setInspectorFirmas((prev) => prev.filter((f) => f.id !== id));
   };
 
-  const limpiarFirma = (ref) => {
+  const limpiarFirma = (ref, id, tipo) => {
     if (ref.current) {
       ref.current.clear();
     }
+        localStorage.removeItem(`firma_${tipo}_nombre_${id}`);
   };
 
   const modificarFirma = (firma, tipo) => {
@@ -92,7 +92,6 @@ function Firma() {
           firma.guardada ? 'p-0 m-0 border-none shadow-none' : 'border p-2 mb-4 shadow'
         } rounded w-fit bg-white`}
       >
-        {/* Botones visibles en hover SIEMPRE */}
         <div className='absolute top-0 right-0 hidden group-hover:flex gap-1'>
           <button
             onClick={() => eliminarFirma(firma.id, tipo)}
@@ -102,7 +101,7 @@ function Firma() {
           </button>
           <button
             onClick={() => {
-              if (!firma.guardada) limpiarFirma(firma.ref);
+              if (!firma.guardada) limpiarFirma(firma.ref, firma.id, tipo);
             }}
             disabled={firma.guardada}
             className={`px-2 py-1 rounded text-xs ${
@@ -143,7 +142,7 @@ function Firma() {
           />
         )}
 
-                <div className='mt-2'>
+        <div className='mt-2'>
           <span className='font-bold'>Nombre y Apellido:</span>
           <input
             type='text'
@@ -174,8 +173,6 @@ function Firma() {
             Guardar firma
           </button>
         )}
-
-
       </div>
     ));
 
@@ -190,11 +187,11 @@ function Firma() {
           >
             Agregar firma del Capitán/Armador
           </button>
-            <p className='text-xs font-bold border-t mt-2'>Firma del Capitán/Armador:</p>
+          <p className='text-xs font-bold border-t mt-2'>Firma y Aclaración del Capitán/Armador</p>
+          <p className='text-xs font-bold'>N° Libreta de Embarco</p>
         </div>
 
         <div className={`grid gap-4 ${inspectorFirmas.length > 2 ? 'grid-cols-2' : ''}`}>
-          <h2 className='text-xl font-bold mb-2 col-span-2'>Firma/s de Inspector/es:</h2>
           {renderFirmas(inspectorFirmas, 'inspector')}
           <button
             onClick={() => agregarFirma('inspector')}
@@ -202,16 +199,12 @@ function Firma() {
           >
             Agregar firma de Inspector
           </button>
+          <p className='text-xs font-bold border-t mt-2'>Firma y Aclaración Autoridad Maritima</p>
         </div>
       </div>
 
       <div className='mt-6'>
-        <button
-          onClick={() => window.print()}
-          className='bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800'
-        >
-          Imprimir documento
-        </button>
+
       </div>
     </div>
   );

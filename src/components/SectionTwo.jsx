@@ -1,5 +1,6 @@
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import Firma from "./Firma";
+import Footer from "./Footer";
 const SectionTwo = () => {
 
     const [formData, setFormData] = useLocalStorage('formulario-inspeccion', {
@@ -125,6 +126,7 @@ const SectionTwo = () => {
         </div>
         <hr></hr>
         <Firma />
+        <Footer />
         </>
     )
 }

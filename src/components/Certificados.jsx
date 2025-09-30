@@ -90,6 +90,6 @@ const Certificados = () => {
         </div>
         </>
     )
-}
+};
 
 export default Certificados;
